@@ -1,28 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>To-Do List</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>To-Do App</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.6);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .container {
+      position: relative;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .task-section {
+      max-width: 600px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 15px;
+      backdrop-filter: blur(5px);
+    }
+
+    .dropdown-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    select {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    option {
+      color: black;
+    }
+
+    .task-box {
+      margin: 10px 0;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .floating-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #ff7043;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 15px;
+      width: 300px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+
+    .modal-content button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: #ff7043;
+      color: white;
+      cursor: pointer;
+    }
+
+    .empty-message {
+      text-align: center;
+      color: #ccc;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Pending Tasks</h1>
-  <div id="taskList"></div>
+  <div class="overlay"></div>
+  <div class="container">
+    <h1>📝 My Tasks</h1>
 
-  <!-- Floating Add Button -->
-  <button id="addBtn">+</button>
+    <div class="task-section">
+      <div class="dropdown-container">
+        <select id="taskFilter">
+          <option value="pending">Pending Tasks</option>
+          <option value="completed">Completed Tasks</option>
+          <option value="expired">Expired Tasks</option>
+        </select>
+      </div>
 
-  <!-- Modal -->
-  <div id="taskModal" class="modal">
-    <div class="modal-content">
-      <h2>Add Task</h2>
-      <input type="text" id="taskText" placeholder="What is the task?">
-      <input type="datetime-local" id="taskTime">
-      <button onclick="saveTask()">Save</button>
-      <button onclick="closeModal()">Cancel</button>
+      <div id="taskList"></div>
+    </div>
+
+    <button class="floating-btn" onclick="openModal()">+</button>
+
+    <div class="modal" id="taskModal">
+      <div class="modal-content">
+        <h3>Add Task</h3>
+        <input type="text" id="taskInput" placeholder="Task description">
+        <input type="datetime-local" id="taskTime">
+        <div style="display: flex; justify-content: space-between;">
+          <button onclick="saveTask()">Save</button>
+          <button onclick="closeModal()">Back</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    let tasks = [];
+
+    function openModal() {
+      document.getElementById('taskModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('taskModal').style.display = 'none';
+    }
+
+    function saveTask() {
+      const taskText = document.getElementById('taskInput').value.trim();
+      const taskTime = document.getElementById('taskTime').value;
+      if (taskText && taskTime) {
+        tasks.push({
+          text: taskText,
+          time: new Date(taskTime),
+          completed: false
+        });
+        document.getElementById('taskInput').value = '';
+        document.getElementById('taskTime').value = '';
+        closeModal();
+        showTasks();
+      }
+    }
+
+    function showTasks() {
+      const taskList = document.getElementById('taskList');
+      const filter = document.getElementById('taskFilter').value;
+      taskList.innerHTML = '';
+
+      const now = new Date();
+      let filtered = [];
+
+      if (filter === 'pending') {
+        filtered = tasks.filter(t => !t.completed && t.time > now);
+      } else if (filter === 'completed') {
+        filtered = tasks.filter(t => t.completed);
+      } else if (filter === 'expired') {
+        filtered = tasks.filter(t => !t.completed && t.time <= now);
+      }
+
+      if (filtered.length === 0) {
+        taskList.innerHTML = `<div class="empty-message">No ${filter} tasks</div>`;
+      } else {
+        filtered.forEach((task, index) => {
+          const taskBox = document.createElement('div');
+          taskBox.className = 'task-box';
+          taskBox.innerHTML = `
+            <div><strong>${task.text}</strong></div>
+            <div>Due: ${task.time.toLocaleString()}</div>
+            ${filter === 'pending' ? `<button onclick="markComplete(${index})">Mark Completed</button>` : ''}
+          `;
+          taskList.appendChild(taskBox);
+        });
+      }
+    }
+
+    function markComplete(index) {
+      const pendingTasks = tasks.filter(t => !t.completed && t.time > new Date());
+      const taskToMark = pendingTasks[index];
+      const realIndex = tasks.findIndex(t => t === taskToMark);
+      if (realIndex !== -1) {
+        tasks[realIndex].completed = true;
+        showTasks();
+      }
+    }
+
+    document.getElementById('taskFilter').addEventListener('change', showTasks);
+    window.onload = showTasks;
+  </script>
 </body>
 </html>
