@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Pending Tasks</h1>
+  <div id="taskList"></div>
+
+  <!-- Floating Add Button -->
+  <button id="addBtn">+</button>
+
+  <!-- Modal -->
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <h2>Add Task</h2>
+      <input type="text" id="taskText" placeholder="What is the task?">
+      <input type="datetime-local" id="taskTime">
+      <button onclick="saveTask()">Save</button>
+      <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
